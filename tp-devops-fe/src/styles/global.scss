@@ -1,0 +1,18 @@
+/*
+ * Global definitions, only mixins and variables!
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+//Custom values
+@import 'styles/variables';
+@import 'styles/mixins';
+
+//Font Awesome files
+@import '~font-awesome/scss/_variables.scss';
+@import '~font-awesome/scss/_mixins.scss';
+
+//Bootstrap
+@import '~bootstrap/scss/_functions.scss';
+@import '~bootstrap/scss/_variables.scss';
+@import '~bootstrap/scss/_mixins.scss';

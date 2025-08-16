@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "name": "Docker: Attach to Node DevOps BE",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/tp-devops-be",
+      "remoteRoot": "/usr/src/app"
+    },
+    {
+      "name": "Docker: Attach to Node DevOps FE",
+      "type": "node",
+      "request": "attach",
+      "port": 9231,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/tp-devops-fe",
+      "remoteRoot": "/usr/src/app"
+    }
+  ]
+}

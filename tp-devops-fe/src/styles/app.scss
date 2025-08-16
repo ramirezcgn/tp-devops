@@ -1,0 +1,14 @@
+/*
+ * Common sass imports, use this file to not replicate changes in all files
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+//Custom values
+@import 'styles/variables';
+
+//Font Awesome files
+@import '~font-awesome/scss/font-awesome';
+
+//Bootstrap
+@import '~bootstrap/scss/bootstrap';

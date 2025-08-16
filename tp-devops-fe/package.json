@@ -1,0 +1,56 @@
+{
+  "name": "tp-devops-fe",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run open-browser && next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src --max-warnings=0",
+    "lint-fix": "eslint src --fix && prettier --write \"src/**/*.*\"",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "generate": "npm run plop --plopfile ./generators/plopfile.js",
+    "open-browser": "start http://localhost:3000 || true"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.0.0",
+    "@fortawesome/free-brands-svg-icons": "^7.0.0",
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "@fortawesome/react-fontawesome": "^0.2.3",
+    "bootstrap": "^5.3.7",
+    "font-awesome": "^4.7.0",
+    "next": "15.4.6",
+    "next-images": "^1.8.5",
+    "next-pwa": "^5.6.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "reactstrap": "^9.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@types/react": "^19.1.10",
+    "@types/recompose": "^0.30.15",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "axios": "^1.11.0",
+    "eslint": "^9.33.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-next": "^15.4.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "reflect-metadata": "^0.2.2",
+    "sass": "^1.90.0",
+    "typescript": "^5.9.2",
+    "webpack": "5"
+  },
+  "overrides": {
+    "eslint": "^9.33.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  }
+}

@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  devops-be:
+    build: ./tp-devops-be
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./tp-devops-be/db:/usr/src/app/db
+    hostname: "devops_be"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DB_HOST=devops_db
+      - DB_PORT=3306
+      - DB_USER=devuser
+      - DB_PASS=devpass
+      - DB_NAME=devops
+    depends_on:
+      devops_db:
+        condition: service_healthy
+  devops_fe:
+    build: ./tp-devops-fe
+    ports:
+      - "3000:3000"
+    depends_on:
+      - devops-be
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - BE_HOST=devops_be
+      - BE_PORT=3001
+  devops_db:
+    image: mariadb:11
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=rootpass
+      - MARIADB_DATABASE=devops
+      - MARIADB_USER=devuser
+      - MARIADB_PASSWORD=devpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - devops_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  devops_db_data:
