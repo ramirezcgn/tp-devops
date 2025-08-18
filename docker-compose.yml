@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   devops-be:
     build: ./tp-devops-be
@@ -51,6 +50,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
 volumes:
   devops_db_data:
