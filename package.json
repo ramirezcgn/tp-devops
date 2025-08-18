@@ -4,7 +4,9 @@
   "scripts": {
     "install-be": "cd tp-devops-be && npm install",
     "install-fe": "cd tp-devops-fe && npm install",
+    "test:be": "cd tp-devops-be && npm test",
+    "test:fe": "cd tp-devops-fe && npm test",
     "postinstall": "npm run install-be && npm run install-fe",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:be && npm run test:fe"
   }
 }
