@@ -16,7 +16,7 @@ const TodoItem: React.FC<Props> = ({ todo, onToggle, onDelete }) => (
     color={todo.completed ? 'success' : ''}
   >
     <span
-      className={cx(styles.todoStyle, todo.completed ? styles.completed : '')}
+      className={cx(styles.itemStyle, { [styles.completed]: todo.completed })}
       onClick={() => onToggle(todo.id)}
       onKeyDown={({ key }) => {
         if (key === 'Enter') {

@@ -9,7 +9,7 @@ const ToDo = sequelize.define(
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     title: {
       type: Sequelize.STRING,

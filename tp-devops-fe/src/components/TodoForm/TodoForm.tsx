@@ -22,7 +22,7 @@ const TodoForm: React.FC<Props> = ({ onAdd }) => {
           <Col xs={9}>
             <Input
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Nuevo todo"
             />
           </Col>

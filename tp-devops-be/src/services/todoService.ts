@@ -1,26 +1,24 @@
-import ToDoRepository from '../repositories/ToDoRepository';
+import toDoRepository from '../repositories/ToDoRepository';
 
-const todo = new ToDoRepository();
-
-class ToDoService {
+export class ToDoService {
   get(id) {
-    return todo.get(id);
+    return toDoRepository.get(id);
   }
 
   getAll(page, limit) {
-    return todo.getAll(page, limit);
+    return toDoRepository.getAll(page, limit);
   }
 
   create(data) {
-    return todo.create(data);
+    return toDoRepository.create(data);
   }
 
   update(id, data) {
-    return todo.update(id, data);
+    return toDoRepository.update(id, data);
   }
 
   remove(id) {
-    return todo.remove(id);
+    return toDoRepository.remove(id);
   }
 }
 

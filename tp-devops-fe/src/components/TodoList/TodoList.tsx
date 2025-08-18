@@ -11,7 +11,7 @@ interface Props {
 
 const TodoList: React.FC<Props> = ({ todos, onToggle, onDelete }) => (
   <ListGroup>
-    {todos.map(todo => (
+    {todos.map((todo) => (
       <TodoItem
         key={todo.id}
         todo={todo}

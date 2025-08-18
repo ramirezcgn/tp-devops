@@ -1,16 +1,18 @@
 {
   "preset": "ts-jest/presets/default-esm",
   "testEnvironment": "node",
-  "testMatch": ["<rootDir>/**/__tests__/**/*.test.ts"],
+  "testMatch": ["<rootDir>/**/*.test.ts"],
   "testPathIgnorePatterns": ["/node_modules/"],
   "coverageDirectory": "./coverage",
   "coveragePathIgnorePatterns": ["node_modules", "db", "src/tests", "src/types"],
-  "globals": {
-    "ts-jest": {
-      "diagnostics": false
-    }
+  "transform": {
+    "^.+\\.tsx?$": ["ts-jest", {
+      "babel": false,
+      "ts-jest": {
+        "tsconfig": "tsconfig.json"
+      }
+    }]
   },
   "moduleDirectories": ["node_modules", "src"],
-  "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"],
-  "resolver": "<rootDir>/src/libs/fileUrlResolver.ts"
+  "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"]
 }

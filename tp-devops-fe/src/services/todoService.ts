@@ -48,7 +48,9 @@ export const deleteTodo = async (id: number): Promise<void> => {
     try {
       const data = await res.json();
       errorMsg = data.message || data.error?.message || errorMsg;
-    } catch {}
+    } catch {
+      // Si no es JSON, ignora
+    }
     throw new Error(errorMsg);
   }
 };

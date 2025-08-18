@@ -1,7 +1,7 @@
 import Repository from './Repository';
 import ToDo from '../models/ToDo';
 
-export default class ToDoRepository implements Repository {
+export class ToDoRepository implements Repository {
   get(id: number) {
     return ToDo.findByPk(id);
   }
@@ -15,7 +15,7 @@ export default class ToDoRepository implements Repository {
 
   create(data: Partial<typeof ToDo>) {
     return ToDo.create({
-      ...data
+      ...data,
     });
   }
 
@@ -36,3 +36,5 @@ export default class ToDoRepository implements Repository {
     });
   }
 }
+
+export default new ToDoRepository();
