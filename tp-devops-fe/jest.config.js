@@ -13,7 +13,21 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   modulePaths: ['<rootDir>/src/', '<rootDir>/.jest'],
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+    '^.+\\.(js|jsx|ts|tsx)$': [
+      'babel-jest',
+      {
+        presets: [
+          [
+            'next/babel',
+            {
+              'preset-react': {
+                runtime: 'automatic',
+              },
+            },
+          ],
+        ],
+      },
+    ],
   },
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
