@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "cross-env NODE_ENV=development npm run nodemon",
-    "nodemon": "nodemon -L --exec \"node --inspect=0.0.0.0:9229 --experimental-specifier-resolution=node --loader ts-node/esm src/server.ts\"",
+    "nodemon": "nodemon -L --exec \"node --inspect=0.0.0.0:9229 --import ./loader.js src/server.ts\"",
     "seed": "npx sequelize-cli db:seed:all",
     "lint": "eslint src",
     "lint-fix": "eslint src --fix",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "prepush": "npm run test",
     "pretest": "npm run lint",
-    "production": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node --loader ts-node/esm ./src/server.ts",
+    "production": "cross-env NODE_ENV=production node --import ./loader.js ./src/server.ts",
     "test": "cross-env NODE_ENV=testing jest --coverage",
     "test:watch": "jest --watch --maxWorkers=25%",
     "test-ci": "jest --coverage --forceExit"

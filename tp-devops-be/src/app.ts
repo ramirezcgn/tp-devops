@@ -27,6 +27,11 @@ app.use(express.json());
 // secure your private routes with jwt authentication middleware
 // app.all('/api/admin/*', (req, res, next) => auth(req, res, next));
 
+// endpoint path to monitor the service
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // fill routes for express application
 app.use('/api/todos', todoRoutes);
 

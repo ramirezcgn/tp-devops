@@ -9,7 +9,7 @@ const dbService = (environment, migrate, seeder) => {
 
   const successfulDBStart = () => {
     console.info(
-      'connection to the database has been established successfully',
+      '\nConnection to the database has been established successfully',
     );
 
     if (seeder) {
@@ -18,12 +18,15 @@ const dbService = (environment, migrate, seeder) => {
   };
 
   const errorDBStart = (err) => {
-    console.info('unable to connect to the database:', err);
+    console.info(
+      '\nError: Unable to connect to the database:',
+      err.sqlMessage || err.message,
+    );
   };
 
   const wrongEnvironment = () => {
     console.warn(
-      `only development, staging, test and production are valid NODE_ENV variables but ${environment} is specified`,
+      `\nError: Only development, staging, test and production are valid NODE_ENV variables but ${environment} is specified`,
     );
     return process.exit(1);
   };
