@@ -1,5 +1,3 @@
-/* eslint-disable no-empty */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import todoService from '../services/todoService';
 import { TodoController } from './todoController';
 

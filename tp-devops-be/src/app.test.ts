@@ -31,4 +31,12 @@ describe('API /api/todos', () => {
     expect(res.body).toHaveProperty('id');
     expect(res.body.title).toBe(todoData.title);
   });
+
+  describe('GET /health', () => {
+    it('debe responder con status 200 y { status: "ok" }', async () => {
+      const res = await request(app).get('/health');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: 'ok' });
+    });
+  });
 });
