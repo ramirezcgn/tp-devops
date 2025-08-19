@@ -22,10 +22,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./package.json:/app/package.json
-      - ./tsconfig.json:/app/tsconfig.json
+      - ./tp-devops-fe/src:/app/src
+      - ./tp-devops-fe/public:/app/public
+      - ./tp-devops-fe/package.json:/app/package.json
+      - ./tp-devops-fe/tsconfig.json:/app/tsconfig.json
     depends_on:
       - devops-be
     environment:

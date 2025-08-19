@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
+import nextPWA from 'next-pwa';
+
 const isProd = process.env.NODE_ENV === 'production';
 
-const withPWA = require('next-pwa')({
+const withPWA = nextPWA({
   dest: 'public',
   disable: !isProd,
 });
@@ -19,10 +21,11 @@ const nextConfig = {
       'import',
       'mixed-decls',
       'legacy-js-api',
-      'slash-div'
-    ]
+      'slash-div',
+    ],
   },
+  outputFileTracingRoot: import.meta.dirname,
   // Otras opciones de configuración aquí
 };
 
-module.exports = withPWA(nextConfig);
+export default withPWA(nextConfig);

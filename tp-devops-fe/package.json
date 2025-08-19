@@ -2,6 +2,7 @@
   "name": "tp-devops-fe",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "npm run open-browser && next dev",
     "build": "next build",
