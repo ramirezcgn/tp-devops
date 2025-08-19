@@ -39,7 +39,8 @@
     "rootDirs": ["./src"]
   },
   "ts-node": {
-    "esm": true
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "include": ["src", "src/**/*.json"],
   "exclude": ["node_modules"]
