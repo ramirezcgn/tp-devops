@@ -1,4 +1,4 @@
-import http from 'http';
+//import http from 'http';
 import app from './app';
 import config from './config';
 import dbService from './services/dbService';
@@ -8,14 +8,13 @@ import seeder from './config/seeds';
 const environment = process.env.NODE_ENV || 'development';
 
 // create http server
-const server = new http.Server(app);
+//const server = new http.Server(app);
 
 // list all available endpoints
 async function startServer() {
   try {
     await dbService(environment, config.migrate, seeder).start();
-
-    server.listen(config.port, () => {
+    app.listen(config.port, () => {
       if (!['production', 'development', 'testing'].includes(environment)) {
         console.error(
           `NODE_ENV is set to ${environment}, but only production and development are valid.`,
