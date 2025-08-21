@@ -29,11 +29,10 @@ app.use(express.json());
 
 // endpoint path to monitor the service
 app.get('/health', (req, res) => {
-  console.log('res prototype:', Object.getPrototypeOf(res));
-  try {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
     res.status(200).json({ status: 'ok' });
-  } catch {
-    //...
+  } else if (res.end) {
+    res.end(JSON.stringify({ status: 'ok' }));
   }
 });
 

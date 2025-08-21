@@ -1,4 +1,3 @@
-//import http from 'http';
 import app from './app';
 import config from './config';
 import dbService from './services/dbService';
@@ -6,9 +5,6 @@ import seeder from './config/seeds';
 
 // environment: development, staging, testing, production
 const environment = process.env.NODE_ENV || 'development';
-
-// create http server
-//const server = new http.Server(app);
 
 // list all available endpoints
 async function startServer() {
