@@ -3,14 +3,12 @@ services:
     build: ./tp-devops-be
     ports:
       - "3001:3001"
-    volumes:
-      - ./tp-devops-be/db:/usr/src/app/db
     hostname: "devops_be"
     environment:
       - NODE_ENV=development
       - PORT=3001
       - DB_HOST=devops_db
-      - DB_PORT=3306
+      - DB_PORT=5432
       - DB_USER=devuser
       - DB_PASS=devpass
       - DB_NAME=devops
@@ -34,19 +32,18 @@ services:
       - BE_HOST=devops_be
       - BE_PORT=3001
   devops_db:
-    image: mariadb:11
+    image: postgres:16
     restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=rootpass
-      - MARIADB_DATABASE=devops
-      - MARIADB_USER=devuser
-      - MARIADB_PASSWORD=devpass
+      - POSTGRES_DB=devops
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - devops_db_data:/var/lib/mysql
+      - devops_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-prootpass"]
+      test: ["CMD-SHELL", "pg_isready -U devuser -d devops"]
       interval: 5s
       timeout: 5s
       retries: 10
