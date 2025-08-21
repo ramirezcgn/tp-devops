@@ -29,6 +29,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - BE_SCHEMA=http
       - BE_HOST=devops_be
       - BE_PORT=3001
   devops_db:

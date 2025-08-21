@@ -1,10 +1,12 @@
 import { Todo } from 'types/todo';
 
+const API_SCHEMA =
+  process.env.BE_SCHEMA || process.env.NEXT_PUBLIC_BE_SCHEMA || 'http';
 const API_HOST =
   process.env.BE_HOST || process.env.NEXT_PUBLIC_BE_HOST || 'localhost';
 const API_PORT =
   process.env.BE_PORT || process.env.NEXT_PUBLIC_BE_PORT || '3001';
-const API_URL = `http://${API_HOST}:${API_PORT}/api/todos`;
+const API_URL = `${API_SCHEMA}://${API_HOST}:${API_PORT}/api/todos`;
 
 console.log('API_HOST:', API_HOST);
 console.log('API_PORT:', API_PORT);
