@@ -4,6 +4,10 @@ const API_HOST = process.env.BE_HOST || 'localhost';
 const API_PORT = process.env.BE_PORT || '3001';
 const API_URL = `http://${API_HOST}:${API_PORT}/api/todos`;
 
+console.log('API_HOST:', process.env.BE_HOST);
+console.log('API_PORT:', process.env.BE_PORT);
+console.log('Using API_URL:', API_URL);
+
 const handleResponse = async (res: Response) => {
   if (!res.ok) {
     let errorMsg = 'Error en la comunicación con el servidor';

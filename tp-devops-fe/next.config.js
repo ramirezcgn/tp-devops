@@ -3,9 +3,6 @@ import nextPWA from 'next-pwa';
 
 const isProd = process.env.NODE_ENV === 'production';
 
-console.log('API_HOST:', process.env.BE_HOST);
-console.log('API_PORT:', process.env.BE_PORT);
-
 const withPWA = nextPWA({
   dest: 'public',
   disable: !isProd,
