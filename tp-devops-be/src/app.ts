@@ -27,9 +27,17 @@ app.use(express.json());
 // secure your private routes with jwt authentication middleware
 // app.all('/api/admin/*', (req, res, next) => auth(req, res, next));
 
+const sendResponse = (res, statusCode, response) => {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    res.status(statusCode).json(response);
+  } else if (res.end) {
+    res.end(JSON.stringify(response));
+  }
+};
+
 // endpoint path to monitor the service
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  sendResponse(res, 200, { status: 'ok' });
 });
 
 // fill routes for express application
@@ -43,8 +51,8 @@ app.use(
     res: express.Response,
     //next: express.NextFunction,
   ) => {
-    console.error(err.stack || err);
-    res.status(err.status || 500).json({
+    //console.error(err.stack || err);
+    sendResponse(res, err.status || 500, {
       error: {
         message: err.message || 'Internal Server Error',
         details: err.details || undefined,
