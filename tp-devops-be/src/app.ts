@@ -29,10 +29,11 @@ app.use(express.json());
 
 // endpoint path to monitor the service
 app.get('/health', (req, res) => {
+  const response = { status: 'ok' };
   if (typeof res.status === 'function' && typeof res.json === 'function') {
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json(response);
   } else if (res.end) {
-    res.end(JSON.stringify({ status: 'ok' }));
+    res.end(JSON.stringify(response));
   }
 });
 
@@ -47,13 +48,18 @@ app.use(
     res: express.Response,
     //next: express.NextFunction,
   ) => {
-    console.error(err.stack || err);
-    res.status(err.status || 500).json({
+    //console.error(err.stack || err);
+    const response = {
       error: {
         message: err.message || 'Internal Server Error',
         details: err.details || undefined,
       },
-    });
+    };
+    if (typeof res.status === 'function' && typeof res.json === 'function') {
+      res.status(err.status || 500).json(response);
+    } else if (res.end) {
+      res.end(JSON.stringify(response));
+    }
   },
 );
 
