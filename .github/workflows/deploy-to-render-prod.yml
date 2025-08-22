@@ -1,8 +1,5 @@
-name: Deploy FE & BE to Render
-on:
-  push:
-    branches:
-      - main
+name: Deploy to Render
+on: [workflow_dispatch]
 jobs:
   deploy-fe:
     runs-on: ubuntu-latest
@@ -10,13 +7,13 @@ jobs:
       - name: Deploy FE to Render
         uses: JorgeLNJunior/render-deploy@v1.4
         with:
-          service_id: ${{ secrets.RENDER_FE_SERVICE_ID }}
-          api_key: ${{ secrets.RENDER_API_KEY }}
+          service_id: ${{ secrets.RENDER_FE_PROD_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_PROD_API_KEY }}
   deploy-be:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy BE to Render
         uses: JorgeLNJunior/render-deploy@v1.4
         with:
-          service_id: ${{ secrets.RENDER_BE_SERVICE_ID }}
-          api_key: ${{ secrets.RENDER_API_KEY }}
+          service_id: ${{ secrets.RENDER_BE_PROD_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_PROD_API_KEY }}
