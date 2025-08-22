@@ -9,6 +9,7 @@ jobs:
         with:
           service_id: ${{ secrets.RENDER_FE_PROD_SERVICE_ID }}
           api_key: ${{ secrets.RENDER_PROD_API_KEY }}
+          wait_deploy: true
   deploy-be:
     runs-on: ubuntu-latest
     steps:
@@ -17,3 +18,4 @@ jobs:
         with:
           service_id: ${{ secrets.RENDER_BE_PROD_SERVICE_ID }}
           api_key: ${{ secrets.RENDER_PROD_API_KEY }}
+          wait_deploy: true
