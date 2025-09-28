@@ -1,5 +1,5 @@
 app = "tp-devops-be"
-primary_region = "mia"
+primary_region = "dfw"
 
 [build]
   dockerfile = "Dockerfile"

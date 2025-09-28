@@ -1,5 +1,5 @@
 app = "tp-devops-db"
-primary_region = "mia"
+primary_region = "dfw"
 
 [env]
   POSTGRES_DB = "devops"
