@@ -21,6 +21,8 @@ jobs:
       - name: Deploy Backend to Railway
         run: |
           cd tp-devops-be
+          npx @railway/cli login
+          npx @railway/cli link --project ${{ secrets.RAILWAY_PROJECT_ID }}
           npx @railway/cli up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -42,6 +44,8 @@ jobs:
       - name: Deploy Frontend to Railway
         run: |
           cd tp-devops-fe
+          npx @railway/cli login
+          npx @railway/cli link --project ${{ secrets.RAILWAY_PROJECT_ID }}
           npx @railway/cli up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
