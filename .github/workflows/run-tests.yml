@@ -4,17 +4,52 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+
 jobs:
-  test:
+  test-backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout with submodules
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test
+          
+      - name: Install backend dependencies
+        run: |
+          cd tp-devops-be
+          npm install
+          
+      - name: Run backend tests
+        run: |
+          cd tp-devops-be
+          npm test
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          
+      - name: Install frontend dependencies
+        run: |
+          cd tp-devops-fe
+          npm install
+          
+      - name: Run frontend tests
+        run: |
+          cd tp-devops-fe
+          npm test
