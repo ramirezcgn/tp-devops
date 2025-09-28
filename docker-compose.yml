@@ -12,6 +12,8 @@ services:
       - DB_USER=devuser
       - DB_PASS=devpass
       - DB_NAME=devops
+      - REDIS_HOST=devops_redis
+      - REDIS_PORT=6379
     depends_on:
       devops_db:
         condition: service_healthy
@@ -47,6 +49,16 @@ services:
       - devops_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U devuser -d devops"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  devops_redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
