@@ -2,11 +2,11 @@ services:
   devops-be:
     build: ./tp-devops-be
     ports:
-      - "3001:3001"
+      - "8080:8080"
     hostname: "devops_be"
     environment:
       - NODE_ENV=development
-      - PORT=3001
+      - PORT=8080
       - DB_HOST=devops_db
       - DB_PORT=5432
       - DB_USER=devuser
@@ -16,9 +16,14 @@ services:
       devops_db:
         condition: service_healthy
   devops_fe:
-    build: ./tp-devops-fe
+    build: 
+      context: ./tp-devops-fe
+      args:
+        - NEXT_PUBLIC_BE_SCHEMA=http
+        - NEXT_PUBLIC_BE_HOST=localhost
+        - NEXT_PUBLIC_BE_PORT=8080
     ports:
-      - "3000:3000"
+      - "80:80"
     volumes:
       - ./tp-devops-fe/src:/app/src
       - ./tp-devops-fe/public:/app/public
@@ -28,10 +33,7 @@ services:
       - devops-be
     environment:
       - NODE_ENV=development
-      - PORT=3000
-      - NEXT_PUBLIC_BE_SCHEMA=http
-      - NEXT_PUBLIC_BE_HOST=devops_be
-      - NEXT_PUBLIC_BE_PORT=3001
+      - PORT=80
   devops_db:
     image: postgres:16
     restart: always
