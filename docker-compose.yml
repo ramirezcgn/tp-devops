@@ -32,6 +32,9 @@ services:
       - BE_SCHEMA=http
       - BE_HOST=devops_be
       - BE_PORT=3001
+      - NEXT_PUBLIC_BE_SCHEMA=http
+      - NEXT_PUBLIC_BE_HOST=devops_be
+      - NEXT_PUBLIC_BE_PORT=3001
   devops_db:
     image: postgres:16
     restart: always
