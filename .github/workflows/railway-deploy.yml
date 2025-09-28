@@ -11,6 +11,8 @@ jobs:
       SVC_ID: ${{ secrets.RAILWAY_BACKEND_SERVICE }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
+      - name: Install Git
+        run: apk add --no-cache git
       - name: Checkout with submodules
         uses: actions/checkout@v4
         with:
@@ -27,6 +29,8 @@ jobs:
       SVC_ID: ${{ secrets.RAILWAY_FRONTEND_SERVICE }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
+      - name: Install Git
+        run: apk add --no-cache git
       - name: Checkout with submodules
         uses: actions/checkout@v4
         with:
