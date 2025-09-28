@@ -1,0 +1,6 @@
+[submodule "tp-devops-be"]
+	path = tp-devops-be
+	url = git@github.com:ramirezcgn/tp-devops-be.git
+[submodule "tp-devops-fe"]
+	path = tp-devops-fe
+	url = git@github.com:ramirezcgn/tp-devops-fe.git
