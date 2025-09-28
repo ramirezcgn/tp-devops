@@ -11,14 +11,28 @@ jobs:
       SVC_ID: ${{ secrets.RAILWAY_BACKEND_SERVICE }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - run: railway up --service=${{ env.SVC_ID }}
-  deploy-froqntend:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy Backend
+        run: |
+          cd tp-devops-be
+          railway up --service=${{ env.SVC_ID }}
+  deploy-frontend:
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:latest
     env:
       SVC_ID: ${{ secrets.RAILWAY_FRONTEND_SERVICE }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - run: railway up --service=${{ env.SVC_ID }}
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy Frontend
+        run: |
+          cd tp-devops-fe
+          railway up --service=${{ env.SVC_ID }}
