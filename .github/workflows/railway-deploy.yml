@@ -24,7 +24,6 @@ jobs:
           npx @railway/cli up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
   deploy-frontend:
     runs-on: ubuntu-latest  
@@ -46,4 +45,3 @@ jobs:
           npx @railway/cli up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
