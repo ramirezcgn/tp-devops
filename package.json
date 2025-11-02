@@ -7,6 +7,21 @@
     "test:be": "cd tp-devops-be && npm test",
     "test:fe": "cd tp-devops-fe && npm test",
     "postinstall": "npm run install-be && npm run install-fe",
-    "test": "npm run test:be && npm run test:fe"
+    "test": "npm run test:be && npm run test:fe",
+    "k3s:start": "powershell -ExecutionPolicy Bypass -File ./start.ps1",
+    "k3s:stop": "powershell -ExecutionPolicy Bypass -File ./stop.ps1",
+    "k3s:port-forward": "powershell -ExecutionPolicy Bypass -File ./start-port-forwards.ps1",
+    "k3s:port-stop": "powershell -ExecutionPolicy Bypass -File ./stop-port-forwards.ps1",
+    "k3s:status": "kubectl get pods,svc",
+    "k3s:logs:be": "kubectl logs -f deployment/devops-be",
+    "k3s:logs:fe": "kubectl logs -f deployment/devops-fe",
+    "k3s:logs:grafana": "kubectl logs -f deployment/grafana",
+    "k3s:test-monitoring": "powershell -ExecutionPolicy Bypass -File ./test-monitoring.ps1",
+    "stress:full": "powershell -ExecutionPolicy Bypass -File ./stress-test.ps1",
+    "stress:quick": "powershell -ExecutionPolicy Bypass -File ./quick-stress.ps1",
+    "stress:frontend": "powershell -ExecutionPolicy Bypass -File ./stress-test.ps1 -Target frontend",
+    "stress:backend": "powershell -ExecutionPolicy Bypass -File ./stress-test.ps1 -Target backend",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down"
   }
 }

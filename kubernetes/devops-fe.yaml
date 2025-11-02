@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-fe
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: devops-fe
+  template:
+    metadata:
+      labels:
+        app: devops-fe
+    spec:
+      containers:
+      - name: devops-fe
+        image: ramirezcgn/tp-devops-fe:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: development
+        - name: PORT
+          value: "3000"
+        - name: NEXT_PUBLIC_BE_SCHEMA
+          value: http
+        - name: NEXT_PUBLIC_BE_HOST
+          value: devops-be
+        - name: NEXT_PUBLIC_BE_PORT
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-fe
+spec:
+  selector:
+    app: devops-fe
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP

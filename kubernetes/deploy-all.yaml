@@ -1,0 +1,437 @@
+# Complete deployment manifest for the DevOps project
+# This file combines all components: Database, Redis, Backend, Frontend, Prometheus, Grafana, and Nginx Load Balancer
+
+# PostgreSQL Database
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: devops-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-db
+  template:
+    metadata:
+      labels:
+        app: devops-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: devops
+        - name: POSTGRES_USER
+          value: devuser
+        - name: POSTGRES_PASSWORD
+          value: devpass
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: db-storage
+        persistentVolumeClaim:
+          claimName: devops-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-db
+spec:
+  selector:
+    app: devops-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+# Redis Cache
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-redis
+  template:
+    metadata:
+      labels:
+        app: devops-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7
+        ports:
+        - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-redis
+spec:
+  selector:
+    app: devops-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+# Backend Application
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-be
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-be
+  template:
+    metadata:
+      labels:
+        app: devops-be
+    spec:
+      containers:
+      - name: devops-be
+        image: ramirezcgn/tp-devops-be:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: development
+        - name: PORT
+          value: "8080"
+        - name: DB_HOST
+          value: devops-db
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: devuser
+        - name: DB_PASS
+          value: devpass
+        - name: DB_NAME
+          value: devops
+        - name: REDIS_HOST
+          value: devops-redis
+        - name: REDIS_PORT
+          value: "6379"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-be
+spec:
+  selector:
+    app: devops-be
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+# Frontend Application (3 replicas for load balancing)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-fe
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: devops-fe
+  template:
+    metadata:
+      labels:
+        app: devops-fe
+    spec:
+      containers:
+      - name: devops-fe
+        image: ramirezcgn/tp-devops-fe:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: development
+        - name: PORT
+          value: "3000"
+        - name: NEXT_PUBLIC_BE_SCHEMA
+          value: http
+        - name: NEXT_PUBLIC_BE_HOST
+          value: devops-be
+        - name: NEXT_PUBLIC_BE_PORT
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-fe
+spec:
+  selector:
+    app: devops-fe
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP
+
+# Prometheus Monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'devops-be'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['devops-be:8080']
+
+      - job_name: 'devops-fe'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['devops-fe:3000']
+      
+      - job_name: 'postgres'
+        static_configs:
+          - targets: ['devops-db:9187']
+      
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['devops-redis:9121']
+      
+      - job_name: 'nginx'
+        static_configs:
+          - targets: ['nginx-lb:9113']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+        - name: prometheus-storage
+          mountPath: /prometheus
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+          - '--web.console.templates=/usr/share/prometheus/consoles'
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config
+      - name: prometheus-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
+  type: ClusterIP
+
+# Grafana Dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus:9090
+      isDefault: true
+      editable: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+      volumes:
+      - name: grafana-storage
+        emptyDir: {}
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: NodePort
+
+# Nginx Load Balancer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        upstream frontend {
+            least_conn;
+            server devops-fe:3000;
+        }
+
+        upstream backend {
+            least_conn;
+            server devops-be:8080;
+        }
+
+        server {
+            listen 80;
+            server_name _;
+
+            location / {
+                proxy_pass http://frontend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            location /api {
+                proxy_pass http://backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-lb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-lb
+  template:
+    metadata:
+      labels:
+        app: nginx-lb
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-lb
+spec:
+  selector:
+    app: nginx-lb
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+  type: NodePort
+
