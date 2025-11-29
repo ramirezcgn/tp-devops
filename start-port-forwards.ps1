@@ -20,11 +20,17 @@ Write-Host "Starting Backend port-forward on localhost:3001..." -ForegroundColor
 Start-Process kubectl -ArgumentList "port-forward svc/devops-be 3001:8080" -WindowStyle Hidden -PassThru | Out-Null
 Start-Sleep -Seconds 2
 
+# Start Jaeger port-forward (for tracing UI)
+Write-Host "Starting Jaeger port-forward on localhost:16686..." -ForegroundColor Cyan
+Start-Process kubectl -ArgumentList "port-forward svc/jaeger-query 16686:16686" -WindowStyle Hidden -PassThru | Out-Null
+Start-Sleep -Seconds 2
+
 Write-Host "`nPort forwards started successfully!" -ForegroundColor Green
 Write-Host "`nAvailable services:" -ForegroundColor Yellow
 Write-Host "  - Application: http://localhost" -ForegroundColor White
 Write-Host "  - Grafana: http://localhost:8080 (admin/admin)" -ForegroundColor White
 Write-Host "  - Backend API: http://localhost:3001/api/todos" -ForegroundColor White
+Write-Host "  - Jaeger UI: http://localhost:16686" -ForegroundColor White
 
 Write-Host "`nTo stop port forwards, run:" -ForegroundColor Yellow
 Write-Host "  Get-Process kubectl | Stop-Process" -ForegroundColor White

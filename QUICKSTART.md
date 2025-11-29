@@ -97,7 +97,10 @@ kubectl apply -f kubernetes/deploy-all.yaml
 ```powershell
 .\start.ps1
 ```
-☕ Wait ~1 minute, then access http://localhost
+☕ Wait ~1 minute, then access:
+- http://localhost (Application)
+- http://localhost:16686 (Jaeger tracing)
+- http://localhost:8080 (Grafana - admin/admin)
 
 ### During Development:
 - Just code normally

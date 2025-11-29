@@ -28,6 +28,8 @@ spec:
           value: devops-be
         - name: NEXT_PUBLIC_BE_PORT
           value: "8080"
+        - name: JAEGER_OTLP_ENDPOINT
+          value: http://jaeger-collector:4318/v1/traces
 ---
 apiVersion: v1
 kind: Service

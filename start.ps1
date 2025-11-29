@@ -92,6 +92,7 @@ Write-Host "`nYour services are available at:" -ForegroundColor White
 Write-Host "  🌐 Application:  http://localhost" -ForegroundColor Cyan
 Write-Host "  📊 Grafana:      http://localhost:8080 (admin/admin)" -ForegroundColor Cyan
 Write-Host "  🔧 Backend API:  http://localhost:3001/api/todos" -ForegroundColor Cyan
+Write-Host "  🔍 Jaeger UI:    http://localhost:16686" -ForegroundColor Cyan
 
 Write-Host "`nUseful commands:" -ForegroundColor White
 Write-Host "  kubectl get pods              - View all pods" -ForegroundColor Gray

@@ -15,6 +15,7 @@ Everything will be configured automatically! See [QUICKSTART.md](QUICKSTART.md) 
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Daily workflow and troubleshooting
 - **[PORT-FORWARDING.md](PORT-FORWARDING.md)** - Technical explanation of port forwarding
+- **[OPENTELEMETRY.md](OPENTELEMETRY.md)** - Observability with OpenTelemetry and Jaeger
 - **[README.md](README.md)** - Complete documentation (this file)
 
 ## Architecture
@@ -28,6 +29,7 @@ Everything will be configured automatically! See [QUICKSTART.md](QUICKSTART.md) 
 - **Monitoring**: Prometheus (port 9090) - Metrics collection
 - **Dashboards**: Grafana (port 3000, user: admin, pass: admin) - Visualization
 - **Load Balancer**: NGINX - External access and routing
+- **Tracing**: Jaeger (port 16686) - Distributed tracing with OpenTelemetry
 
 ### Traffic Flow
 
@@ -145,10 +147,11 @@ npm run docker:up
 ### Deploy All Components
 
 ```sh
-# Deploy everything at once
+# Deploy everything at once (recommended)
 kubectl apply -f kubernetes/deploy-all.yaml
 
-# Or deploy individually
+# Or deploy individually (for granular control)
+kubectl apply -f kubernetes/jaeger.yaml        # Deploy Jaeger first
 kubectl apply -f kubernetes/devops-db.yaml
 kubectl apply -f kubernetes/devops-redis.yaml
 kubectl apply -f kubernetes/devops-be.yaml
@@ -187,6 +190,7 @@ kubectl port-forward svc/devops-be 3001:8080 &
 
 - **Application (Frontend)**: http://localhost (via NGINX LoadBalancer)
 - **Backend API**: http://localhost/api/todos (via NGINX LoadBalancer)
+- **Jaeger UI**: http://localhost:30686 (Distributed tracing interface)
 - **Grafana**: Port-forward required - `kubectl port-forward svc/grafana 8080:3000` then http://localhost:8080
 - **Prometheus**: Port-forward required - `kubectl port-forward svc/prometheus 9090:9090`
 
