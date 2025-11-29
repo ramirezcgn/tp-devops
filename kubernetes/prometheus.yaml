@@ -22,15 +22,20 @@ data:
         metrics_path: '/api/metrics'
         static_configs:
           - targets: ['devops-fe:3000']
-      
+
+      - job_name: 'cadvisor'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['cadvisor:8080']
+
       - job_name: 'postgres'
         static_configs:
           - targets: ['devops-db:9187']
-      
+
       - job_name: 'redis'
         static_configs:
           - targets: ['devops-redis:9121']
-      
+
       - job_name: 'nginx'
         static_configs:
           - targets: ['nginx-lb:9113']

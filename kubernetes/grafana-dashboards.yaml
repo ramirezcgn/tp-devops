@@ -1,0 +1,181 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+data:
+  devops-dashboard.json: |
+    {
+      "title": "DevOps Application Metrics",
+      "tags": ["devops", "monitoring"],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "10s",
+      "panels": [
+          {
+            "id": 1,
+            "title": "Container CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{container_label_io_kubernetes_container_name=~\"devops-be|devops-fe|postgres|redis\"}[5m]) * 100",
+                "legendFormat": "{{container_label_io_kubernetes_container_name}}"
+              }
+            ],
+            "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+            "yaxes": [{"label": "CPU %", "format": "percent"}]
+          },
+          {
+            "id": 2,
+            "title": "Container Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{container_label_io_kubernetes_container_name=~\"devops-be|devops-fe|postgres|redis\"} / 1024 / 1024",
+                "legendFormat": "{{container_label_io_kubernetes_container_name}}"
+              }
+            ],
+            "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+            "yaxes": [{"label": "Memory (MB)", "format": "short"}]
+          },
+          {
+            "id": 3,
+            "title": "Total Todos",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "todos_total"
+              }
+            ],
+            "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4}
+          },
+          {
+            "id": 4,
+            "title": "Active Todos",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "todos_active"
+              }
+            ],
+            "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4}
+          },
+          {
+            "id": 5,
+            "title": "Completed Todos",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "todos_completed"
+              }
+            ],
+            "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4}
+          },
+          {
+            "id": 6,
+            "title": "HTTP Requests Total",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total[5m]))"
+              }
+            ],
+            "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4}
+          },
+          {
+            "id": 7,
+            "title": "HTTP Request Duration (P95)",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "p95"
+              },
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "p50"
+              }
+            ],
+            "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+            "yaxes": [{"label": "Duration (s)", "format": "s"}]
+          },
+          {
+            "id": 8,
+            "title": "Cache Hit Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) * 100",
+                "legendFormat": "Hit Rate %"
+              }
+            ],
+            "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+            "yaxes": [{"label": "Hit Rate %", "format": "percent", "max": 100}]
+          },
+          {
+            "id": 9,
+            "title": "Cache Hits vs Misses",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(cache_hits_total[5m])",
+                "legendFormat": "Hits"
+              },
+              {
+                "expr": "rate(cache_misses_total[5m])",
+                "legendFormat": "Misses"
+              }
+            ],
+            "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8}
+          },
+          {
+            "id": 10,
+            "title": "Stress Tests Executed",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(stress_tests_total)"
+              }
+            ],
+            "gridPos": {"x": 12, "y": 20, "w": 6, "h": 4}
+          },
+          {
+            "id": 11,
+            "title": "Node.js Heap Memory",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "nodejs_heap_used_bytes / 1024 / 1024",
+                "legendFormat": "Heap Used (MB)"
+              },
+              {
+                "expr": "nodejs_heap_total_bytes / 1024 / 1024",
+                "legendFormat": "Heap Total (MB)"
+              }
+            ],
+            "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8},
+            "yaxes": [{"label": "Memory (MB)", "format": "short"}]
+          },
+          {
+            "id": 12,
+            "title": "HTTP Requests by Status",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status_code=~\"2..\"}[5m])",
+                "legendFormat": "2xx"
+              },
+              {
+                "expr": "rate(http_requests_total{status_code=~\"4..\"}[5m])",
+                "legendFormat": "4xx"
+              },
+              {
+                "expr": "rate(http_requests_total{status_code=~\"5..\"}[5m])",
+                "legendFormat": "5xx"
+              }
+            ],
+            "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8}
+          }
+        ],
+        "time": {"from": "now-15m", "to": "now"}
+    }
