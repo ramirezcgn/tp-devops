@@ -3,11 +3,11 @@
 ## After Reboot - Complete Startup
 
 ### Super Quick (1 command):
-```powershell
-.\start.ps1
+```bash
+./start.sh
 ```
 or
-```powershell
+```bash
 npm run k3s:start
 ```
 
@@ -18,7 +18,7 @@ npm run k3s:start
 ## What Happens When You Reboot?
 
 ### Docker Desktop:
-- ✅ Automatically starts with Windows (if configured)
+- ✅ Automatically starts with system (if configured)
 - ✅ Kubernetes cluster persists between reboots
 
 ### Kubernetes Resources:
@@ -27,7 +27,7 @@ npm run k3s:start
 
 ### Port Forwards:
 - ❌ Do NOT persist (need to restart manually)
-- This is why you need to run `.\start.ps1`
+- This is why you need to run `./start.sh`
 
 ---
 
@@ -37,19 +37,19 @@ npm run k3s:start
 Check system tray for Docker icon (whale)
 
 ### 2. Check if resources are already deployed:
-```powershell
+```bash
 kubectl get pods
 ```
 
 **If pods are running** → Just start port forwards:
-```powershell
-.\start-port-forwards.ps1
+```bash
+./start-port-forwards.sh
 ```
 
 **If no pods** → Deploy everything:
-```powershell
+```bash
 kubectl apply -f kubernetes/deploy-all.yaml
-.\start-port-forwards.ps1
+./start-port-forwards.sh
 ```
 
 ---
@@ -57,30 +57,31 @@ kubectl apply -f kubernetes/deploy-all.yaml
 ## Troubleshooting
 
 ### "Docker is not running"
-1. Open Docker Desktop from Start Menu
+1. Open Docker Desktop
 2. Wait for it to fully start (green icon in system tray)
-3. Run `.\start.ps1` again
+3. Run `./start.sh` again
 
 ### "Kubernetes is not enabled"
 1. Open Docker Desktop
 2. Settings → Kubernetes → Enable Kubernetes
 3. Wait for Kubernetes to start
-4. Run `.\start.ps1` again
+4. Run `./start.sh` again
 
 ### "Port already in use"
-```powershell
+```bash
 # Find what's using the port
-netstat -ano | findstr :80
+lsof -i :80  # Linux/macOS
+netstat -ano | grep :80  # Windows (Git Bash)
 
 # Kill the process
-Stop-Process -Id <PID> -Force
+kill -9 <PID>
 
 # Restart
-.\start.ps1
+./start.sh
 ```
 
 ### "Pods stuck in Pending/ImagePullBackOff"
-```powershell
+```bash
 # Check pod status
 kubectl describe pod <pod-name>
 
@@ -94,8 +95,8 @@ kubectl apply -f kubernetes/deploy-all.yaml
 ## Daily Workflow
 
 ### Morning (after booting PC):
-```powershell
-.\start.ps1
+```bash
+./start.sh
 ```
 ☕ Wait ~1 minute, then access:
 - http://localhost (Application)
@@ -105,11 +106,11 @@ kubectl apply -f kubernetes/deploy-all.yaml
 ### During Development:
 - Just code normally
 - Port forwards stay active
-- If they die: `.\start-port-forwards.ps1`
+- If they die: `./start-port-forwards.sh`
 
 ### Evening (shutting down):
-```powershell
-.\stop.ps1
+```bash
+./stop.sh
 ```
 Choose whether to keep Kubernetes resources or delete them
 
@@ -117,23 +118,18 @@ Choose whether to keep Kubernetes resources or delete them
 
 ## Pro Tips
 
-1. **Add to startup** (optional):
-   - Create shortcut to `start.ps1`
-   - Put in `shell:startup` folder
-   - Auto-runs on login
-
-2. **Keep it simple**:
+1. **Keep it simple**:
    - Don't delete resources when shutting down
    - Just restart port forwards next time
    - Saves deployment time
 
-3. **Monitor health**:
-   ```powershell
+2. **Monitor health**:
+   ```bash
    npm run k3s:status
    ```
 
-4. **Quick access to logs**:
-   ```powershell
+3. **Quick access to logs**:
+   ```bash
    npm run k3s:logs:be
    npm run k3s:logs:fe
    ```
@@ -149,4 +145,4 @@ For reference, this is what was already configured:
 3. ✅ Configured port forwarding scripts
 4. ✅ Added npm scripts
 
-You only need to run `.\start.ps1` from now on!
+You only need to run `./start.sh` from now on!

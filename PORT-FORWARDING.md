@@ -2,7 +2,7 @@
 
 ## Why These Scripts Are Needed
 
-When running Kubernetes (K3s) on **Docker Desktop for Windows**, LoadBalancer services don't automatically expose ports to `localhost`. This is different from:
+When running Kubernetes (K3s) on **Docker Desktop**, LoadBalancer services don't automatically expose ports to `localhost`. This is different from:
 
 - **Cloud providers** (AWS, GCP, Azure): Get real external IPs
 - **Minikube**: Has `minikube tunnel` command
@@ -15,7 +15,7 @@ service/nginx-lb     LoadBalancer   10.96.84.226    172.19.0.6    80:30080/TCP
 service/grafana      LoadBalancer   10.96.52.161    172.19.0.5    3000:31473/TCP
 ```
 
-The `EXTERNAL-IP` (172.19.0.x) is an **internal Docker network IP**, not accessible from Windows.
+The `EXTERNAL-IP` (172.19.0.x) is an **internal Docker network IP**, not accessible from the host.
 
 ### The Solution
 
@@ -25,66 +25,71 @@ The `EXTERNAL-IP` (172.19.0.x) is an **internal Docker network IP**, not accessi
 
 ### Start All Port Forwards
 
-```powershell
-.\start-port-forwards.ps1
+```bash
+./start-port-forwards.sh
 ```
 
 This starts:
 - **Grafana**: http://localhost:8080
 - **NGINX (Frontend/Backend)**: http://localhost
 - **Backend API**: http://localhost:3001
+- **Jaeger**: http://localhost:16686
 
 ### Stop All Port Forwards
 
-```powershell
-.\stop-port-forwards.ps1
+```bash
+./stop-port-forwards.sh
 ```
 
 Or manually:
-```powershell
-Get-Process kubectl | Stop-Process
+```bash
+pkill -f "kubectl port-forward"
 ```
 
 ## Checking Active Port Forwards
 
-```powershell
-# List kubectl processes
-Get-Process kubectl
+```bash
+# List kubectl port-forward processes
+ps aux | grep "kubectl port-forward"
 
-# Should show 3 processes (one per service)
+# Should show 4 processes (one per service)
 ```
 
 ## Troubleshooting
 
 ### Port Already in Use
 
-```powershell
+```bash
 # Find what's using the port (e.g., port 80)
-netstat -ano | findstr :80
+# On Linux/macOS
+lsof -i :80
+
+# On Windows (Git Bash)
+netstat -ano | grep :80
 
 # Kill the process using the port
-Stop-Process -Id <PID> -Force
+kill -9 <PID>
 
 # Restart port forwards
-.\start-port-forwards.ps1
+./start-port-forwards.sh
 ```
 
 ### Connection Refused
 
 1. **Check if pods are running**:
-   ```powershell
+   ```bash
    kubectl get pods
    ```
 
 2. **Check if services exist**:
-   ```powershell
+   ```bash
    kubectl get svc
    ```
 
 3. **Restart port forwards**:
-   ```powershell
-   .\stop-port-forwards.ps1
-   .\start-port-forwards.ps1
+   ```bash
+   ./stop-port-forwards.sh
+   ./start-port-forwards.sh
    ```
 
 ### Port Forward Keeps Dying
@@ -94,7 +99,7 @@ Port forwards can die if:
 - Docker Desktop restarts
 - Kubernetes pods restart
 
-**Solution**: Just run `.\start-port-forwards.ps1` again
+**Solution**: Just run `./start-port-forwards.sh` again
 
 ## Alternative: MetalLB (Advanced)
 

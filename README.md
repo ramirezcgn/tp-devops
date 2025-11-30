@@ -5,8 +5,8 @@ This project contains a full-stack application with backend, frontend, databases
 ## 🚀 Quick Start (After Reboot)
 
 **Just run this:**
-```powershell
-.\start.ps1
+```bash
+./start.sh
 ```
 
 Everything will be configured automatically! See [QUICKSTART.md](QUICKSTART.md) for details.
@@ -74,9 +74,8 @@ Prometheus → All services (metrics scraping)
 
 ### ⚡ After Reboot - One Command
 
-```powershell
-# Windows PowerShell (Recommended)
-.\start.ps1
+```bash
+./start.sh
 ```
 
 **What it does:**
@@ -87,15 +86,15 @@ Prometheus → All services (metrics scraping)
 5. ✅ Opens access to all services
 
 **Alternative commands:**
-```sh
+```bash
 npm run k3s:start          # Same as above (via npm)
 npm run docker:up          # Use Docker Compose instead
 ```
 
 ### 🛑 Shutdown
 
-```powershell
-.\stop.ps1                 # Interactive shutdown
+```bash
+./stop.sh                  # Interactive shutdown
 npm run k3s:stop           # Same via npm
 ```
 
@@ -105,9 +104,8 @@ npm run k3s:stop           # Same via npm
 
 **After reboot, just run:**
 
-```powershell
-# Windows PowerShell
-.\start.ps1
+```bash
+./start.sh
 
 # Or using npm
 npm run k3s:start
@@ -122,8 +120,8 @@ This script will:
 
 **To stop everything:**
 
-```powershell
-.\stop.ps1
+```bash
+./stop.sh
 # or
 npm run k3s:stop
 ```
@@ -168,17 +166,16 @@ kubectl get pods --watch
 
 Docker Desktop doesn't expose LoadBalancer services directly to localhost. Use the provided scripts:
 
-**Windows (PowerShell):**
-```powershell
+```bash
 # Start all port forwards
-.\start-port-forwards.ps1
+./start-port-forwards.sh
 
 # Stop all port forwards
-.\stop-port-forwards.ps1
+./stop-port-forwards.sh
 ```
 
 **Manual port forwarding:**
-```sh
+```bash
 kubectl port-forward svc/grafana 8080:3000 &
 kubectl port-forward svc/nginx-lb 80:80 &
 kubectl port-forward svc/devops-be 3001:8080 &
@@ -412,12 +409,12 @@ kubectl get endpoints devops-be
 ```
 
 ### Port Forwarding Issues
-```sh
-# Kill existing port-forwards (Windows PowerShell)
-Get-Process kubectl -ErrorAction SilentlyContinue | Stop-Process -Force
+```bash
+# Kill existing port-forwards
+pkill -f "kubectl port-forward"
 
 # Restart all port-forwards using the provided script
-.\start-port-forwards.ps1
+./start-port-forwards.sh
 
 # Or manually restart
 kubectl port-forward svc/grafana 8080:3000
@@ -425,7 +422,7 @@ kubectl port-forward svc/grafana 8080:3000
 
 **Why port-forwarding is needed:**
 - Docker Desktop with K3s doesn't expose LoadBalancer services directly to localhost
-- LoadBalancer services get internal IPs (172.19.0.x) that aren't accessible from Windows host
+- LoadBalancer services get internal IPs (172.19.0.x) that aren't accessible from the host
 - Port-forwarding creates a tunnel from localhost to the service
 - The scripts automate this process and keep the tunnels active
 
