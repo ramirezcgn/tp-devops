@@ -37,6 +37,9 @@ data:
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_read_timeout 60s;
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 60s;
             }
 
             location /api {
@@ -45,6 +48,15 @@ data:
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Proxy para trazas de OpenTelemetry hacia Jaeger
+            location /v1/traces {
+                proxy_pass http://jaeger-collector:4318/v1/traces;
+                proxy_set_header Content-Type application/json;
+                proxy_read_timeout 10s;
+                proxy_connect_timeout 10s;
+                proxy_send_timeout 10s;
             }
 
             location /health {
@@ -78,7 +90,7 @@ spec:
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
-      
+
       # NGINX Prometheus Exporter Sidecar
       - name: nginx-exporter
         image: nginx/nginx-prometheus-exporter:latest
@@ -86,7 +98,7 @@ spec:
         - containerPort: 9113
         args:
           - -nginx.scrape-uri=http://localhost/nginx_status
-      
+
       volumes:
       - name: nginx-config
         configMap:

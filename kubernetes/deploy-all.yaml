@@ -113,6 +113,29 @@ spec:
         image: ramirezcgn/tp-devops-be:latest
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
         env:
         - name: NODE_ENV
           value: development
@@ -376,12 +399,23 @@ data:
             listen 80;
             server_name _;
 
+            # NGINX status endpoint for prometheus exporter
+            location /nginx_status {
+                stub_status on;
+                access_log off;
+                allow 127.0.0.1;
+                deny all;
+            }
+
             location / {
                 proxy_pass http://frontend;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_read_timeout 60s;
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 60s;
             }
 
             location /api {
@@ -390,6 +424,15 @@ data:
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Proxy para trazas de OpenTelemetry hacia Jaeger
+            location /v1/traces {
+                proxy_pass http://jaeger-collector:4318/v1/traces;
+                proxy_set_header Content-Type application/json;
+                proxy_read_timeout 10s;
+                proxy_connect_timeout 10s;
+                proxy_send_timeout 10s;
             }
 
             location /health {
@@ -423,6 +466,15 @@ spec:
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
+
+      # NGINX Prometheus Exporter Sidecar
+      - name: nginx-exporter
+        image: nginx/nginx-prometheus-exporter:latest
+        ports:
+        - containerPort: 9113
+        args:
+          - -nginx.scrape-uri=http://localhost/nginx_status
+
       volumes:
       - name: nginx-config
         configMap:
@@ -436,9 +488,13 @@ spec:
   selector:
     app: nginx-lb
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 80
     nodePort: 30080
+  - name: nginx-exporter
+    port: 9113
+    targetPort: 9113
   type: NodePort
 
 # Jaeger Tracing
