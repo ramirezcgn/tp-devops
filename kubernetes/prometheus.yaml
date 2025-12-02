@@ -15,30 +15,97 @@ data:
 
       - job_name: 'devops-be'
         metrics_path: '/metrics'
-        static_configs:
-          - targets: ['devops-be:8080']
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: devops-be
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: $1:8080
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: instance
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
 
       - job_name: 'devops-fe'
         metrics_path: '/api/metrics'
-        static_configs:
-          - targets: ['devops-fe:3000']
-
-      - job_name: 'cadvisor'
-        metrics_path: '/metrics'
-        static_configs:
-          - targets: ['cadvisor:8080']
-
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: devops-fe
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: $1:3000
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: instance
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+      
       - job_name: 'postgres'
         static_configs:
           - targets: ['devops-db:9187']
-
+      
       - job_name: 'redis'
         static_configs:
           - targets: ['devops-redis:9121']
-
+      
       - job_name: 'nginx'
         static_configs:
           - targets: ['nginx-lb:9113']
+      
+      - job_name: 'cadvisor'
+        static_configs:
+          - targets: ['cadvisor:8080']
+      
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics:8080']
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: default
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -54,6 +121,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
       - name: prometheus
         image: prom/prometheus:latest

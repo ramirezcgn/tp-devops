@@ -1,71 +1,118 @@
 # Quick Start Guide
 
-## After Reboot - Complete Startup
+## First Time Setup
 
-### Super Quick (1 command):
+### Create the k3d cluster:
 ```bash
-./start.sh
-```
-or
-```bash
-npm run k3s:start
+k3d cluster create devops \
+  --agents 2 \
+  --port "80:80@loadbalancer" \
+  --port "8080:8080@loadbalancer" \
+  --port "16686:16686@loadbalancer" \
+  --port "9090:9090@loadbalancer" \
+  --port "3001:3001@loadbalancer"
 ```
 
-**That's it!** The script handles everything automatically.
+### Deploy the application:
+```bash
+kubectl apply -f kubernetes/deploy-all.yaml
+
+# Wait for pods to be ready
+kubectl get pods --watch
+```
+
+**That's it!** Services are accessible directly on localhost.
+
+---
+
+## After Reboot - Quick Start
+
+### Start the cluster:
+```bash
+k3d cluster start devops
+```
+
+### Verify pods are running:
+```bash
+kubectl get pods
+```
+
+If resources were deleted, redeploy:
+```bash
+kubectl apply -f kubernetes/deploy-all.yaml
+```
 
 ---
 
 ## What Happens When You Reboot?
 
-### Docker Desktop:
-- ✅ Automatically starts with system (if configured)
-- ✅ Kubernetes cluster persists between reboots
+### k3d Cluster:
+- ❌ Cluster stops when Docker stops
+- ✅ Automatically restarts when you run `./start.sh`
+- ✅ All resources persist (they redeploy quickly)
 
-### Kubernetes Resources:
-- ✅ Pods, Services, Deployments persist
-- ✅ Will auto-restart if Docker Desktop restarts
-
-### Port Forwards:
-- ❌ Do NOT persist (need to restart manually)
-- This is why you need to run `./start.sh`
+### Services:
+- ✅ Accessible directly on localhost (no port-forwarding needed)
+- ✅ LoadBalancer automatically exposes services
+- ✅ No tunnels to manage or scripts to remember
 
 ---
 
-## Step-by-Step (if you prefer manual):
+## Step-by-Step (Manual Workflow)
 
-### 1. Ensure Docker Desktop is Running
+### 1. Ensure Docker is Running
 Check system tray for Docker icon (whale)
 
-### 2. Check if resources are already deployed:
+### 2. Start k3d cluster:
+```bash
+k3d cluster start devops
+```
+
+### 3. Verify cluster is running:
+```bash
+k3d cluster list
+kubectl cluster-info
+```
+
+### 4. Check if resources are deployed:
 ```bash
 kubectl get pods
 ```
 
-**If pods are running** → Just start port forwards:
-```bash
-./start-port-forwards.sh
-```
-
-**If no pods** → Deploy everything:
+### 5. Deploy if needed:
 ```bash
 kubectl apply -f kubernetes/deploy-all.yaml
-./start-port-forwards.sh
 ```
+
+### 6. Access services:
+- http://localhost (Application)
+- http://localhost:8080 (Grafana)
+- http://localhost:16686 (Jaeger)
+- http://localhost:9090 (Prometheus)
 
 ---
 
 ## Troubleshooting
 
+### "k3d cluster not found"
+```bash
+# Create the cluster
+k3d cluster create devops \
+  --agents 2 \
+  --port "80:80@loadbalancer" \
+  --port "8080:8080@loadbalancer" \
+  --port "16686:16686@loadbalancer" \
+  --port "9090:9090@loadbalancer" \
+  --port "3001:3001@loadbalancer"
+
+# Deploy resources
+kubectl apply -f kubernetes/deploy-all.yaml
+```
+
 ### "Docker is not running"
-1. Open Docker Desktop
+1. Open Docker Desktop (or Docker)
 2. Wait for it to fully start (green icon in system tray)
 3. Run `./start.sh` again
-
-### "Kubernetes is not enabled"
-1. Open Docker Desktop
-2. Settings → Kubernetes → Enable Kubernetes
-3. Wait for Kubernetes to start
-4. Run `./start.sh` again
 
 ### "Port already in use"
 ```bash
@@ -88,6 +135,11 @@ kubectl describe pod <pod-name>
 # Force recreation
 kubectl delete -f kubernetes/deploy-all.yaml
 kubectl apply -f kubernetes/deploy-all.yaml
+
+# Or restart the cluster
+k3d cluster stop devops
+k3d cluster start devops
+kubectl apply -f kubernetes/deploy-all.yaml
 ```
 
 ---
@@ -96,53 +148,91 @@ kubectl apply -f kubernetes/deploy-all.yaml
 
 ### Morning (after booting PC):
 ```bash
-./start.sh
+# Start cluster
+k3d cluster start devops
+
+# Verify pods are running
+kubectl get pods
 ```
-☕ Wait ~1 minute, then access:
+
+☕ Wait ~30-60 seconds, then access:
 - http://localhost (Application)
 - http://localhost:16686 (Jaeger tracing)
 - http://localhost:8080 (Grafana - admin/admin)
+- http://localhost:9090 (Prometheus)
 
 ### During Development:
 - Just code normally
-- Port forwards stay active
-- If they die: `./start-port-forwards.sh`
+- Services always accessible on localhost
+- No tunnels to worry about!
 
 ### Evening (shutting down):
 ```bash
-./stop.sh
+# Stop cluster (optional - saves resources)
+k3d cluster stop devops
+
+# Or delete resources but keep cluster running
+kubectl delete -f kubernetes/deploy-all.yaml
 ```
-Choose whether to keep Kubernetes resources or delete them
 
 ---
 
 ## Pro Tips
 
-1. **Keep it simple**:
-   - Don't delete resources when shutting down
-   - Just restart port forwards next time
-   - Saves deployment time
+1. **k3d benefits**:
+   - Lighter than Docker Desktop K8s (~1GB less RAM)
+   - Faster startup/shutdown
+   - No port-forwarding hassle
+   - Direct localhost access to all services
 
-2. **Monitor health**:
+2. **Quick cluster management**:
    ```bash
-   npm run k3s:status
+   k3d cluster start devops    # Start
+   k3d cluster stop devops     # Stop
+   k3d cluster list            # List all clusters
    ```
 
-3. **Quick access to logs**:
+3. **Monitor health**:
    ```bash
-   npm run k3s:logs:be
-   npm run k3s:logs:fe
+   kubectl get pods
+   kubectl get svc
+   kubectl top pods
    ```
+
+4. **Quick access to logs**:
+   ```bash
+   kubectl logs -f deployment/devops-be
+   kubectl logs -f deployment/devops-fe
+   ```
+
+5. **Keep resources between reboots**:
+   - Don't delete resources when stopping
+   - Just stop the cluster: `k3d cluster stop devops`
+   - Resources persist and restart quickly
 
 ---
 
-## First Time Setup (Already Done)
+## Common Commands
 
-For reference, this is what was already configured:
+```bash
+# Cluster management
+k3d cluster create devops --agents 2 --port "80:80@loadbalancer" ...
+k3d cluster start devops
+k3d cluster stop devops
+k3d cluster delete devops
+k3d cluster list
 
-1. ✅ Built Docker images
-2. ✅ Created Kubernetes manifests
-3. ✅ Configured port forwarding scripts
-4. ✅ Added npm scripts
+# Deploy/Update
+kubectl apply -f kubernetes/deploy-all.yaml
+kubectl delete -f kubernetes/deploy-all.yaml
 
-You only need to run `./start.sh` from now on!
+# Monitor
+kubectl get pods
+kubectl get svc
+kubectl logs -f deployment/devops-be
+kubectl describe pod <pod-name>
+
+# Scale
+kubectl scale deployment devops-be --replicas=3
+kubectl scale deployment devops-fe --replicas=5
+```

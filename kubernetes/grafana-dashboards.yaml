@@ -14,12 +14,12 @@ data:
       "panels": [
           {
             "id": 1,
-            "title": "Container CPU Usage",
+            "title": "Application CPU Usage",
             "type": "graph",
             "targets": [
               {
-                "expr": "rate(container_cpu_usage_seconds_total{container_label_io_kubernetes_container_name=~\"devops-be|devops-fe|postgres|redis\"}[5m]) * 100",
-                "legendFormat": "{{container_label_io_kubernetes_container_name}}"
+                "expr": "rate(process_cpu_seconds_total{job=~\"devops-be|devops-fe|postgres|redis\"}[5m]) * 100",
+                "legendFormat": "{{instance}}"
               }
             ],
             "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
@@ -27,12 +27,20 @@ data:
           },
           {
             "id": 2,
-            "title": "Container Memory Usage",
+            "title": "Application Memory Usage",
             "type": "graph",
             "targets": [
               {
-                "expr": "container_memory_usage_bytes{container_label_io_kubernetes_container_name=~\"devops-be|devops-fe|postgres|redis\"} / 1024 / 1024",
-                "legendFormat": "{{container_label_io_kubernetes_container_name}}"
+                "expr": "nodejs_heap_size_used_bytes{job=~\"devops-be|devops-fe\"} / 1024 / 1024",
+                "legendFormat": "{{instance}} (heap)"
+              },
+              {
+                "expr": "process_resident_memory_bytes{job=~\"devops-be|devops-fe|postgres|redis\"} / 1024 / 1024",
+                "legendFormat": "{{instance}} (RSS)"
+              },
+              {
+                "expr": "redis_memory_used_bytes / 1024 / 1024",
+                "legendFormat": "{{instance}} (Redis)"
               }
             ],
             "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},

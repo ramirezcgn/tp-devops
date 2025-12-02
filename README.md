@@ -2,19 +2,36 @@
 
 This project contains a full-stack application with backend, frontend, databases (PostgreSQL and Redis), monitoring (Prometheus and Grafana), and load balancing (NGINX).
 
-## 🚀 Quick Start (After Reboot)
+## 🚀 Quick Start
 
-**Just run this:**
+### First Time Setup
+
+**Create the k3d cluster:**
 ```bash
-./start.sh
+k3d cluster create devops \
+  --agents 2 \
+  --port "80:80@loadbalancer" \
+  --port "8080:8080@loadbalancer" \
+  --port "16686:16686@loadbalancer" \
+  --port "9090:9090@loadbalancer" \
+  --port "3001:3001@loadbalancer"
 ```
 
-Everything will be configured automatically! See [QUICKSTART.md](QUICKSTART.md) for details.
+**Deploy the application:**
+```bash
+kubectl apply -f kubernetes/deploy-all.yaml
+```
+
+### After Reboot
+
+**Start the cluster:**
+```bash
+k3d cluster start devops
+```
 
 ## 📚 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Daily workflow and troubleshooting
-- **[PORT-FORWARDING.md](PORT-FORWARDING.md)** - Technical explanation of port forwarding
 - **[OPENTELEMETRY.md](OPENTELEMETRY.md)** - Observability with OpenTelemetry and Jaeger
 - **[README.md](README.md)** - Complete documentation (this file)
 
@@ -72,61 +89,29 @@ Prometheus → All services (metrics scraping)
 
 ## Quick Start
 
-### ⚡ After Reboot - One Command
+### Managing the k3d Cluster
 
+**Start the cluster:**
 ```bash
-./start.sh
+k3d cluster start devops
 ```
 
-**What it does:**
-1. ✅ Checks Docker & Kubernetes are running
-2. ✅ Deploys all resources (if needed)
-3. ✅ Waits for pods to be ready
-4. ✅ Sets up port forwarding
-5. ✅ Opens access to all services
-
-**Alternative commands:**
+**Stop the cluster:**
 ```bash
-npm run k3s:start          # Same as above (via npm)
-npm run docker:up          # Use Docker Compose instead
+k3d cluster stop devops
 ```
 
-### 🛑 Shutdown
-
+**Delete the cluster:**
 ```bash
-./stop.sh                  # Interactive shutdown
-npm run k3s:stop           # Same via npm
+k3d cluster delete devops
 ```
 
----
-
-### Option 1: Automated Startup (Recommended)
-
-**After reboot, just run:**
-
+**Check cluster status:**
 ```bash
-./start.sh
-
-# Or using npm
-npm run k3s:start
+k3d cluster list
 ```
 
-This script will:
-1. ✓ Check Docker Desktop is running
-2. ✓ Check Kubernetes is enabled
-3. ✓ Deploy all resources (if not already deployed)
-4. ✓ Wait for pods to be ready
-5. ✓ Setup port forwarding automatically
-
-**To stop everything:**
-
-```bash
-./stop.sh
-# or
-npm run k3s:stop
-```
-
-### Option 2: Docker Compose (Simple Alternative)
+### Alternative: Docker Compose (Simple Option)
 
 ```sh
 docker-compose up --build
@@ -136,11 +121,23 @@ npm run docker:up
 
 ## Kubernetes Deployment
 
-### Prerequisites (Docker Desktop with K3s)
+### Prerequisites
 
-1. **Docker Desktop** installed and running
-2. **Kubernetes** enabled in Docker Desktop settings
+1. **Docker** installed and running
+2. **k3d** installed (`brew install k3d` or download from https://k3d.io)
 3. **kubectl** command available
+
+**Installation:**
+```bash
+# Windows (via Chocolatey)
+choco install k3d
+
+# macOS
+brew install k3d
+
+# Linux
+wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+```
 
 ### Deploy All Components
 
@@ -162,36 +159,17 @@ kubectl apply -f kubernetes/nginx-lb.yaml
 kubectl get pods --watch
 ```
 
-### Start Port Forwarding (Required for Docker Desktop)
-
-Docker Desktop doesn't expose LoadBalancer services directly to localhost. Use the provided scripts:
-
-```bash
-# Start all port forwards
-./start-port-forwards.sh
-
-# Stop all port forwards
-./stop-port-forwards.sh
-```
-
-**Manual port forwarding:**
-```bash
-kubectl port-forward svc/grafana 8080:3000 &
-kubectl port-forward svc/nginx-lb 80:80 &
-kubectl port-forward svc/devops-be 3001:8080 &
-```
-
 ### Access Services
 
-**For Docker Desktop + K3s:**
+All services are accessible directly on localhost via LoadBalancer:
 
-- **Application (Frontend)**: http://localhost (via NGINX LoadBalancer)
-- **Backend API**: http://localhost/api/todos (via NGINX LoadBalancer)
-- **Jaeger UI**: http://localhost:30686 (Distributed tracing interface)
-- **Grafana**: Port-forward required - `kubectl port-forward svc/grafana 8080:3000` then http://localhost:8080
-- **Prometheus**: Port-forward required - `kubectl port-forward svc/prometheus 9090:9090`
+- **Application (Frontend)**: http://localhost
+- **Backend API**: http://localhost/api/todos
+- **Jaeger UI**: http://localhost:16686 (Distributed tracing)
+- **Grafana**: http://localhost:8080 (Dashboards - admin/admin)
+- **Prometheus**: http://localhost:9090 (Metrics)
 
-**Note**: NodePort services may not work directly in Docker Desktop. Use port-forwarding or LoadBalancer type services.
+**Direct Access**: k3d automatically exposes LoadBalancer services to localhost. No port-forwarding needed!
 
 ### Testing Load Balancing
 
@@ -213,10 +191,6 @@ for i in {1..5}; do curl -I http://localhost/api/todos | grep -i x-pod-name; don
 
 ```sh
 # Kubernetes commands
-npm run k3s:start          # Start everything (deploy + port-forward)
-npm run k3s:stop           # Stop everything (port-forward + optional delete)
-npm run k3s:port-forward   # Start port forwarding only
-npm run k3s:port-stop      # Stop port forwarding only
 npm run k3s:status         # View pods and services status
 npm run k3s:logs:be        # View backend logs
 npm run k3s:logs:fe        # View frontend logs
@@ -236,6 +210,12 @@ npm run test:fe            # Run frontend tests
 ```
 
 ```sh
+# k3d cluster management
+k3d cluster start devops           # Start cluster
+k3d cluster stop devops            # Stop cluster
+k3d cluster delete devops          # Delete cluster
+k3d cluster list                   # List clusters
+
 # View all services and their endpoints
 kubectl get svc,endpoints
 
@@ -263,11 +243,6 @@ kubectl rollout restart deployment/devops-fe
 # View resource usage
 kubectl top nodes
 kubectl top pods
-
-# Port forwarding examples
-kubectl port-forward svc/prometheus 9090:9090
-kubectl port-forward svc/grafana 8080:3000
-kubectl port-forward svc/devops-be 3001:8080
 
 # Execute commands inside a pod
 kubectl exec -it deployment/devops-be -- sh
@@ -408,28 +383,31 @@ kubectl get endpoints devops-be
 # If empty, check pod labels match service selector
 ```
 
-### Port Forwarding Issues
+### k3d Cluster Issues
+
 ```bash
-# Kill existing port-forwards
-pkill -f "kubectl port-forward"
+# Check cluster status
+k3d cluster list
 
-# Restart all port-forwards using the provided script
-./start-port-forwards.sh
+# Restart cluster if stopped
+k3d cluster start devops
 
-# Or manually restart
-kubectl port-forward svc/grafana 8080:3000
+# Delete and recreate cluster (if needed)
+k3d cluster delete devops
+k3d cluster create devops \
+  --agents 2 \
+  --port "80:80@loadbalancer" \
+  --port "8080:8080@loadbalancer" \
+  --port "16686:16686@loadbalancer" \
+  --port "9090:9090@loadbalancer" \
+  --port "3001:3001@loadbalancer"
 ```
 
-**Why port-forwarding is needed:**
-- Docker Desktop with K3s doesn't expose LoadBalancer services directly to localhost
-- LoadBalancer services get internal IPs (172.19.0.x) that aren't accessible from the host
-- Port-forwarding creates a tunnel from localhost to the service
-- The scripts automate this process and keep the tunnels active
-
-**Alternative solution (Production):**
-- Use MetalLB or a cloud provider's LoadBalancer
-- Configure Ingress Controller (nginx-ingress, traefik)
-- These solutions work better in real Kubernetes clusters
+**Why k3d?**
+- LoadBalancer services automatically exposed on localhost
+- Lightweight (~1GB less RAM than Docker Desktop K8s)
+- Faster startup and shutdown
+- No port-forwarding scripts needed
 
 ### Database Connection Issues
 ```sh

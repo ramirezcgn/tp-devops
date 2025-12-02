@@ -29,7 +29,7 @@ data:
       updateIntervalSeconds: 10
       allowUiUpdates: true
       options:
-        path: /var/lib/grafana/dashboards
+        path: /etc/grafana/dashboards
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -57,6 +57,14 @@ spec:
           value: admin
         - name: GF_USERS_ALLOW_SIGN_UP
           value: "false"
+        - name: JAEGER_AGENT_HOST
+          value: jaeger-agent
+        - name: JAEGER_AGENT_PORT
+          value: "6831"
+        - name: JAEGER_SAMPLER_TYPE
+          value: const
+        - name: JAEGER_SAMPLER_PARAM
+          value: "1"
         volumeMounts:
         - name: grafana-storage
           mountPath: /var/lib/grafana
@@ -65,7 +73,7 @@ spec:
         - name: grafana-dashboards-provisioning
           mountPath: /etc/grafana/provisioning/dashboards
         - name: grafana-dashboards
-          mountPath: /var/lib/grafana/dashboards
+          mountPath: /etc/grafana/dashboards
       volumes:
       - name: grafana-storage
         emptyDir: {}

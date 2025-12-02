@@ -21,26 +21,30 @@
 
 ### Prerequisitos
 
-1. **Docker Desktop** corriendo con Kubernetes habilitado
-2. **kubectl** configurado
-3. **curl** disponible en terminal
+1. **Docker** corriendo
+2. **k3d cluster** creado y funcionando
+3. **kubectl** configurado
+4. **curl** disponible en terminal
 
 ### Paso 1: Iniciar el Sistema
 
 ```bash
-# Opción A: Usar script de inicio (recomendado)
-./start.sh
+# Iniciar el cluster k3d
+k3d cluster start devops
 
-# Opción B: Manual
+# Desplegar recursos
 kubectl apply -f kubernetes/deploy-all.yaml
-./start-port-forwards.sh
+
+# Esperar a que los pods estén listos
+kubectl wait --for=condition=ready pod --all --timeout=180s
 ```
 
 **Qué hace internamente:**
 
-1. **Verifica Docker y Kubernetes**
-   - `docker info` → Check si daemon está corriendo
-   - `kubectl cluster-info` → Check si K8s está habilitado
+1. **Inicia el cluster k3d**
+   - `k3d cluster start` → Levanta contenedores Docker que simulan nodos K8s
+   - Traefik LoadBalancer se activa automáticamente
+   - Mapeos de puertos se configuran en Docker
 
 2. **Deploy de recursos**
    - Lee `kubernetes/deploy-all.yaml` (644 líneas)
@@ -48,16 +52,16 @@ kubectl apply -f kubernetes/deploy-all.yaml
    - Kubernetes scheduler asigna pods a nodos
 
 3. **Espera pods ready**
-   - Polling cada 5s: `kubectl get pods --no-headers`
-   - Cuenta pods con estado `1/1 Running`
-   - Max wait: 180s (3 minutos)
+   - `kubectl wait` monitorea readiness probes
+   - Timeout: 180s (3 minutos)
+   - Cuando todos están `1/1 Running` → Listo
 
-4. **Port forwards**
-   - Crea túneles: `kubectl port-forward svc/<name> <local>:<remote>`
-   - Procesos en background
-   - Logs silenciados con `> /dev/null 2>&1`
+4. **LoadBalancer automático**
+   - k3d expone servicios LoadBalancer en localhost
+   - No necesita port-forwards manuales
+   - Traefik enruta tráfico según port mappings
 
-**Tiempo estimado:** 2-3 minutos
+**Tiempo estimado:** 1-2 minutos
 
 ### Paso 2: Verificar que Todo Está Corriendo
 
@@ -82,24 +86,26 @@ nginx-lb-xxxxxxxxxx-xxxxx    2/2     Running   0          2m
 prometheus-xxxxxxxx-xxxxx    1/1     Running   0          2m
 ```
 
-**Verificar servicios accesibles:**
+**Verificar servicios accesibles (k3d LoadBalancer):**
 
 ```bash
-# Aplicación frontend
+# Aplicación frontend (puerto 80)
 curl http://localhost
 
-# Backend API
+# Backend API (puerto 80, ruta /api)
 curl http://localhost/api/health
 
-# Grafana
+# Grafana (puerto 8080)
 curl http://localhost:8080
 
-# Jaeger
+# Jaeger (puerto 16686)
 curl http://localhost:16686
 
-# Prometheus
+# Prometheus (puerto 9090)
 curl http://localhost:9090
 ```
+
+**Nota:** Con k3d, los servicios están accesibles directamente en localhost gracias a los port mappings configurados en la creación del cluster. No se necesitan port-forwards.
 
 ---
 
@@ -933,7 +939,23 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-  type: ClusterIP  # ← Load balancing interno
+  type: ClusterIP  # ← Load balancing interno K8s
+```
+
+**Servicio nginx-lb (acceso externo con k3d):**
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-lb
+spec:
+  selector:
+    app: nginx-lb
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer  # ← k3d expone en localhost:80
 ```
 
 **Nginx upstream:**
@@ -1545,23 +1567,45 @@ kubectl describe pod devops-be-xxxxx-xxxxx | grep -A 20 Events:
 3. **Dependencies no disponibles**
    - Verificar DB está corriendo: `kubectl get pods -l app=devops-db`
 
-### Problema: Port Forward No Funciona
+### Problema: Servicios No Accesibles en localhost
+
+**Diagnóstico:**
 
 ```bash
-# Error: unable to forward port because pod is not running
-```
+# Verificar que el cluster k3d está corriendo
+k3d cluster list
 
-**Solución:**
-
-```bash
-# Kill todos los port forwards
-pkill -f "kubectl port-forward"
+# Debe mostrar:
+# NAME     SERVERS   AGENTS   LOADBALANCER
+# devops   1/1       2/2      true
 
 # Verificar pods están ready
 kubectl get pods
 
-# Reiniciar port forwards
-./start-port-forwards.sh
+# Verificar servicios LoadBalancer
+kubectl get svc
+```
+
+**Soluciones:**
+
+1. **Si cluster está detenido:**
+```bash
+k3d cluster start devops
+```
+
+2. **Si servicios no tienen EXTERNAL-IP:**
+```bash
+# Recrear el cluster con los port mappings correctos
+k3d cluster delete devops
+k3d cluster create devops \
+  --agents 2 \
+  --port "80:80@loadbalancer" \
+  --port "8080:8080@loadbalancer" \
+  --port "16686:16686@loadbalancer" \
+  --port "9090:9090@loadbalancer" \
+  --port "3001:3001@loadbalancer"
+
+kubectl apply -f kubernetes/deploy-all.yaml
 ```
 
 ### Problema: Servicio 502 Bad Gateway
@@ -1710,8 +1754,14 @@ kubectl port-forward svc/<service-name> <local-port>:<remote-port>
 
 ### Cleanup
 ```bash
-# Eliminar todo
+# Eliminar recursos pero mantener cluster
 kubectl delete -f kubernetes/deploy-all.yaml
+
+# Detener cluster (libera recursos, mantiene configuración)
+k3d cluster stop devops
+
+# Eliminar cluster completamente
+k3d cluster delete devops
 
 # Eliminar específico
 kubectl delete deployment <name>
